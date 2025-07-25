@@ -39,6 +39,29 @@ const RecipesTab = () => {
     }
   }, []);
 
+  // Listen for ingredient price changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedIngredients = localStorage.getItem('panshule-ingredients');
+      if (savedIngredients) {
+        setIngredients(JSON.parse(savedIngredients));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Recalculate recipe costs when ingredients change
+  useEffect(() => {
+    setRecipes(prevRecipes => 
+      prevRecipes.map(recipe => ({
+        ...recipe,
+        cost: calculateRecipeCost(recipe.ingredients)
+      }))
+    );
+  }, [ingredients]);
+
   useEffect(() => {
     localStorage.setItem('panshule-recipes', JSON.stringify(recipes));
   }, [recipes]);
@@ -225,16 +248,27 @@ const RecipesTab = () => {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Ingredients:</p>
                   <ul className="text-sm space-y-1">
-                    {recipe.ingredients.map((ingredient, index) => (
-                      <li key={index}>
-                        {ingredient.quantity} {ingredient.unit} {ingredient.name}
-                      </li>
-                    ))}
+                    {recipe.ingredients.map((ingredient, index) => {
+                      const price = ingredients[ingredient.name] || 0;
+                      const cost = price * ingredient.quantity;
+                      const hasPrice = ingredients[ingredient.name] !== undefined;
+                      
+                      return (
+                        <li key={index} className="flex justify-between items-center">
+                          <span className={hasPrice ? '' : 'text-orange-500'}>
+                            {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                          </span>
+                          <span className={`text-xs ${hasPrice ? 'text-muted-foreground' : 'text-orange-500'}`}>
+                            {hasPrice ? `$${cost.toFixed(2)}` : 'No price'}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
                 <div className="pt-2 border-t border-border">
                   <p className="text-sm font-medium">
-                    Estimated Cost: <span className="text-primary font-bold">${recipe.cost.toFixed(2)}</span>
+                    Total Cost: <span className="text-primary font-bold">${recipe.cost.toFixed(2)}</span>
                   </p>
                 </div>
               </div>
