@@ -8,8 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 
 interface IngredientPrice {
   name: string;
-  price: number;
+  price: number; // calculated price per unit
   unit: string;
+  productPrice: number; // full product price (e.g., $900 for 1kg)
+  productQuantity: number; // full product quantity (e.g., 1000 for 1kg)
+  productUnit: string; // full product unit (e.g., "kg")
 }
 
 const IngredientsTab = () => {
@@ -63,6 +66,25 @@ const IngredientsTab = () => {
   }) => {
     const [formData, setFormData] = useState(ingredient);
 
+    // Calculate price per unit automatically
+    const calculatePricePerUnit = (productPrice: number, productQuantity: number) => {
+      if (productQuantity > 0) {
+        return productPrice / productQuantity;
+      }
+      return 0;
+    };
+
+    // Update price per unit when product price or quantity changes
+    const updateFormData = (updates: Partial<IngredientPrice>) => {
+      const newData = { ...formData, ...updates };
+      
+      if (updates.productPrice !== undefined || updates.productQuantity !== undefined) {
+        newData.price = calculatePricePerUnit(newData.productPrice, newData.productQuantity);
+      }
+      
+      setFormData(newData);
+    };
+
     return (
       <Card className="shadow-card">
         <CardHeader>
@@ -74,37 +96,88 @@ const IngredientsTab = () => {
             <Input
               id="ingredient-name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => updateFormData({ name: e.target.value })}
               placeholder="e.g., Flour, Sugar, Butter"
               disabled={!isCreating}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="ingredient-price">Price per Unit</Label>
-              <Input
-                id="ingredient-price"
-                type="number"
-                step="0.01"
-                value={formData.price || ''}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                placeholder="0.00"
-              />
+          <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+            <h4 className="font-medium text-sm">Product Purchase Information</h4>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="product-price">Product Price</Label>
+                <Input
+                  id="product-price"
+                  type="number"
+                  step="0.01"
+                  value={formData.productPrice || ''}
+                  onChange={(e) => updateFormData({ productPrice: parseFloat(e.target.value) || 0 })}
+                  placeholder="900.00"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Total price you paid</p>
+              </div>
+              <div>
+                <Label htmlFor="product-quantity">Product Quantity</Label>
+                <Input
+                  id="product-quantity"
+                  type="number"
+                  step="0.01"
+                  value={formData.productQuantity || ''}
+                  onChange={(e) => updateFormData({ productQuantity: parseFloat(e.target.value) || 0 })}
+                  placeholder="1000"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Amount you bought</p>
+              </div>
             </div>
+            
             <div>
-              <Label htmlFor="ingredient-unit">Unit</Label>
+              <Label htmlFor="product-unit">Product Unit</Label>
               <Input
-                id="ingredient-unit"
-                value={formData.unit}
-                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                placeholder="kg, liter, piece"
+                id="product-unit"
+                value={formData.productUnit}
+                onChange={(e) => updateFormData({ productUnit: e.target.value })}
+                placeholder="kg, liters, pieces"
               />
+              <p className="text-xs text-muted-foreground mt-1">Unit of the amount bought</p>
             </div>
           </div>
 
+          <div className="space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+            <h4 className="font-medium text-sm">Recipe Unit Information</h4>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="recipe-unit">Recipe Unit</Label>
+                <Input
+                  id="recipe-unit"
+                  value={formData.unit}
+                  onChange={(e) => updateFormData({ unit: e.target.value })}
+                  placeholder="gr, ml, pieces"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Unit used in recipes</p>
+              </div>
+              <div>
+                <Label>Price per {formData.unit || 'unit'}</Label>
+                <Input
+                  value={formData.price.toFixed(4)}
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Automatically calculated</p>
+              </div>
+            </div>
+            
+            {formData.productPrice > 0 && formData.productQuantity > 0 && (
+              <div className="text-sm text-muted-foreground">
+                Example: ${formData.productPrice} ÷ {formData.productQuantity} {formData.productUnit} = ${formData.price.toFixed(4)} per {formData.unit}
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2">
-            <Button onClick={() => onSave(formData)}>
+            <Button onClick={() => onSave(formData)} disabled={!formData.name || formData.productPrice <= 0 || formData.productQuantity <= 0}>
               <Save className="w-4 h-4 mr-2" />
               Save Ingredient
             </Button>
@@ -121,7 +194,7 @@ const IngredientsTab = () => {
   if (editingIngredient || isCreating) {
     return (
       <IngredientForm
-        ingredient={editingIngredient || { name: '', price: 0, unit: '' }}
+        ingredient={editingIngredient || { name: '', price: 0, unit: '', productPrice: 0, productQuantity: 0, productUnit: '' }}
         onSave={handleSaveIngredient}
         onCancel={() => {
           setEditingIngredient(null);
@@ -167,12 +240,15 @@ const IngredientsTab = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">
+                  <span>Product: ${ingredient.productPrice} for {ingredient.productQuantity} {ingredient.productUnit}</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Price per {ingredient.unit}:</span>
-                  <span className="font-semibold text-primary">${ingredient.price.toFixed(2)}</span>
+                  <span className="font-semibold text-primary">${ingredient.price.toFixed(4)}</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-2">
-                  <span>Cost calculation: ${ingredient.price.toFixed(2)} × quantity used in recipe</span>
+                  <span>Cost calculation: ${ingredient.price.toFixed(4)} × quantity used in recipe</span>
                 </div>
               </div>
             </CardContent>
