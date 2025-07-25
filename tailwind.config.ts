@@ -18,6 +18,15 @@ export default {
 			}
 		},
 		extend: {
+			backgroundImage: {
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-accent': 'var(--gradient-accent)',
+			},
+			boxShadow: {
+				'warm': 'var(--shadow-warm)',
+				'card': 'var(--shadow-card)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
