@@ -168,12 +168,11 @@ const IngredientsTab = () => {
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Price:</span>
+                  <span className="text-sm text-muted-foreground">Price per {ingredient.unit}:</span>
                   <span className="font-semibold text-primary">${ingredient.price.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Unit:</span>
-                  <span className="text-sm">{ingredient.unit}</span>
+                <div className="text-xs text-muted-foreground mt-2">
+                  <span>Cost calculation: ${ingredient.price.toFixed(2)} × quantity used in recipe</span>
                 </div>
               </div>
             </CardContent>
