@@ -107,7 +107,7 @@ const OrdersTab = () => {
             </TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Marca temporal</TableHead>
+                <TableHead>fecha de pedido</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead className="text-right">Cantidad</TableHead>
