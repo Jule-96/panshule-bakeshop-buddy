@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ChefHat, Receipt, Package, Calendar } from 'lucide-react';
+import { ChefHat, Receipt, Package, Calendar, ClipboardList } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +14,7 @@ const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
     { id: 'recipes', label: 'Recipes', icon: ChefHat },
     { id: 'ingredients', label: 'Ingredients', icon: Package },
     { id: 'sales', label: 'New Sale', icon: Receipt },
+    { id: 'orders', label: 'Orders', icon: ClipboardList },
     { id: 'history', label: 'Sales History', icon: Calendar },
   ];
 

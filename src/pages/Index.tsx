@@ -4,6 +4,7 @@ import RecipesTab from '@/components/RecipesTab';
 import IngredientsTab from '@/components/IngredientsTab';
 import SalesTab from '@/components/SalesTab';
 import HistoryTab from '@/components/HistoryTab';
+import OrdersTab from '@/components/OrdersTab';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('recipes');
@@ -16,6 +17,8 @@ const Index = () => {
         return <IngredientsTab />;
       case 'sales':
         return <SalesTab />;
+      case 'orders':
+        return <OrdersTab />;
       case 'history':
         return <HistoryTab />;
       default:
