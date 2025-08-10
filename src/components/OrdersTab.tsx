@@ -111,7 +111,7 @@ const OrdersTab = () => {
                 <TableHead>Cliente</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead className="text-right">Cantidad</TableHead>
-                <TableHead className="text-right">Precio</TableHead>
+                <TableHead className="text-right">Precio de venta</TableHead>
                 <TableHead>Comentarios</TableHead>
                 <TableHead>Dirección</TableHead>
                 <TableHead>Estado</TableHead>
@@ -144,14 +144,14 @@ const OrdersTab = () => {
                   </TableCell>
                   <TableCell>
                     <Select
-                      value={o.cobrado ? "Si" : "No"}
-                      onValueChange={(v) => updateOrder(o.id, { cobrado: v === "Si" })}
+                      value={o.cobrado ? "Yes" : "No"}
+                      onValueChange={(v) => updateOrder(o.id, { cobrado: v === "Yes" })}
                     >
                       <SelectTrigger className="w-[100px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Si">Si</SelectItem>
+                        <SelectItem value="Yes">Yes</SelectItem>
                         <SelectItem value="No">No</SelectItem>
                       </SelectContent>
                     </Select>

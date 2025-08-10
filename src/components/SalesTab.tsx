@@ -16,6 +16,7 @@ interface Recipe {
 interface SaleItem {
   recipeId: string;
   quantity: number;
+  salePrice: number;
 }
 
 interface Sale {
@@ -29,7 +30,7 @@ interface Sale {
 const SalesTab = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [customerName, setCustomerName] = useState('');
-  const [saleItems, setSaleItems] = useState<SaleItem[]>([{ recipeId: '', quantity: 1 }]);
+  const [saleItems, setSaleItems] = useState<SaleItem[]>([{ recipeId: '', quantity: 1, salePrice: 0 }]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -40,7 +41,7 @@ const SalesTab = () => {
   }, []);
 
   const addSaleItem = () => {
-    setSaleItems([...saleItems, { recipeId: '', quantity: 1 }]);
+    setSaleItems([...saleItems, { recipeId: '', quantity: 1, salePrice: 0 }]);
   };
 
   const updateSaleItem = (index: number, field: keyof SaleItem, value: string | number) => {
@@ -56,7 +57,8 @@ const SalesTab = () => {
   const calculateTotal = () => {
     return saleItems.reduce((total, item) => {
       const recipe = recipes.find(r => r.id === item.recipeId);
-      return total + (recipe ? recipe.cost * item.quantity : 0);
+      const unit = item.salePrice > 0 ? item.salePrice : (recipe ? recipe.cost : 0);
+      return total + unit * item.quantity;
     }, 0);
   };
 
@@ -66,7 +68,7 @@ const SalesTab = () => {
       return;
     }
 
-    const validItems = saleItems.filter(item => item.recipeId && item.quantity > 0);
+    const validItems = saleItems.filter(item => item.recipeId && item.quantity > 0 && item.salePrice > 0);
     if (validItems.length === 0) {
       toast({ title: "Please add at least one item", variant: "destructive" });
       return;
@@ -84,11 +86,30 @@ const SalesTab = () => {
     const updatedSales = [sale, ...existingSales];
     localStorage.setItem('panshule-sales', JSON.stringify(updatedSales));
 
+    // Also append line items to Orders for tracking
+    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const newOrders = validItems.map((item, idx) => {
+      const recipe = recipes.find(r => r.id === item.recipeId);
+      return {
+        id: `${sale.id}-${idx}`,
+        timestamp: sale.date,
+        cliente: sale.customerName,
+        producto: recipe ? recipe.name : item.recipeId,
+        cantidad: item.quantity,
+        precio: item.salePrice,
+        comentarios: '',
+        direccion: '',
+        estado: "Pedido",
+        cobrado: false,
+      };
+    });
+    localStorage.setItem('orders', JSON.stringify([...newOrders, ...existingOrders]));
+
     toast({ title: "Sale recorded successfully!" });
     
     // Reset form
     setCustomerName('');
-    setSaleItems([{ recipeId: '', quantity: 1 }]);
+    setSaleItems([{ recipeId: '', quantity: 1, salePrice: 0 }]);
   };
 
   return (
@@ -142,6 +163,18 @@ const SalesTab = () => {
                       value={item.quantity}
                       onChange={(e) => updateSaleItem(index, 'quantity', parseInt(e.target.value) || 1)}
                       placeholder="Qty"
+                    />
+                  </div>
+                  <div className="w-32">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={item.salePrice}
+                      onChange={(e) =>
+                        updateSaleItem(index, 'salePrice', parseFloat(e.target.value) || 0)
+                      }
+                      placeholder="Sale price"
                     />
                   </div>
                   <Button
