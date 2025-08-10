@@ -69,7 +69,7 @@ const OrdersTab = () => {
     <section>
       <header className="mb-4">
         <h1 className="text-2xl font-semibold text-foreground">Orders (Pedidos)</h1>
-        <p className="text-muted-foreground">Administra pedidos con estado y cobro, similar a tu tabla.</p>
+        <p className="text-muted-foreground">Administra pedidos con estado, cobro y dirección de envío.</p>
       </header>
 
       <Card className="p-4">
@@ -128,7 +128,13 @@ const OrdersTab = () => {
                   <TableCell className="text-right">{o.cantidad}</TableCell>
                   <TableCell className="text-right">{currency.format(o.precio)}</TableCell>
                   <TableCell className="max-w-[260px] truncate" title={o.comentarios}>{o.comentarios}</TableCell>
-                  <TableCell className="max-w-[220px] truncate" title={o.direccion}>{o.direccion}</TableCell>
+                  <TableCell className="max-w-[220px]">
+                    <Input
+                      value={o.direccion ?? ""}
+                      onChange={(e) => updateOrder(o.id, { direccion: e.target.value })}
+                      placeholder="Dirección de envío"
+                    />
+                  </TableCell>
                   <TableCell>
                     <Select value={o.estado} onValueChange={(v) => updateOrder(o.id, { estado: v as Order["estado"] })}>
                       <SelectTrigger className="w-[140px]">

@@ -18,6 +18,7 @@ interface Recipe {
   name: string;
   ingredients: Ingredient[];
   cost: number;
+  salePrice?: number;
 }
 
 const RecipesTab = () => {
@@ -31,9 +32,10 @@ const RecipesTab = () => {
     const savedRecipes = localStorage.getItem('panshule-recipes');
     const savedIngredients = localStorage.getItem('panshule-ingredients');
     
-    if (savedRecipes) {
-      setRecipes(JSON.parse(savedRecipes));
-    }
+if (savedRecipes) {
+  const parsed: Recipe[] = JSON.parse(savedRecipes);
+  setRecipes(parsed.map(r => ({ ...r, salePrice: r.salePrice ?? 0 })));
+}
     if (savedIngredients) {
       setIngredients(JSON.parse(savedIngredients));
     }
@@ -136,6 +138,21 @@ const RecipesTab = () => {
               placeholder="Enter recipe name"
             />
           </div>
+          
+          <div>
+            <Label htmlFor="recipe-sale-price">Final Sale Price</Label>
+            <Input
+              id="recipe-sale-price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.salePrice ?? 0}
+              onChange={(e) =>
+                setFormData({ ...formData, salePrice: parseFloat(e.target.value) || 0 })
+              }
+              placeholder="Enter final sale price"
+            />
+          </div>
 
           <div>
             <Label>Ingredients</Label>
@@ -199,7 +216,7 @@ const RecipesTab = () => {
   if (editingRecipe || isCreating) {
     return (
       <RecipeForm
-        recipe={editingRecipe || { id: '', name: '', ingredients: [], cost: 0 }}
+        recipe={editingRecipe || { id: '', name: '', ingredients: [], cost: 0, salePrice: 0 }}
         onSave={handleSaveRecipe}
         onCancel={() => {
           setEditingRecipe(null);
@@ -266,10 +283,15 @@ const RecipesTab = () => {
                     })}
                   </ul>
                 </div>
-                <div className="pt-2 border-t border-border">
+                <div className="pt-2 border-t border-border space-y-1">
                   <p className="text-sm font-medium">
                     Total Cost: <span className="text-primary font-bold">${recipe.cost.toFixed(2)}</span>
                   </p>
+                  {typeof recipe.salePrice === 'number' && recipe.salePrice > 0 && (
+                    <p className="text-sm">
+                      Sale Price: <span className="font-medium">${recipe.salePrice.toFixed(2)}</span>
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>

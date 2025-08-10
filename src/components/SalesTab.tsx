@@ -11,6 +11,7 @@ interface Recipe {
   id: string;
   name: string;
   cost: number;
+  salePrice?: number;
 }
 
 interface SaleItem {
@@ -142,15 +143,21 @@ const SalesTab = () => {
                   <div className="flex-1">
                     <Select
                       value={item.recipeId}
-                      onValueChange={(value) => updateSaleItem(index, 'recipeId', value)}
-                    >
+                      onValueChange={(value) => {
+                        const r = recipes.find(r => r.id === value);
+                        const price = r ? (r.salePrice ?? r.cost) : 0;
+                        const newItems = [...saleItems];
+                        newItems[index] = { ...newItems[index], recipeId: value, salePrice: price };
+                        setSaleItems(newItems);
+                      }}
+                      >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a recipe" />
                       </SelectTrigger>
                       <SelectContent>
                         {recipes.map((recipe) => (
                           <SelectItem key={recipe.id} value={recipe.id}>
-                            {recipe.name} - ${recipe.cost.toFixed(2)}
+                            {recipe.name} - ${((recipe.salePrice ?? recipe.cost) || 0).toFixed(2)}
                           </SelectItem>
                         ))}
                       </SelectContent>
